@@ -14,15 +14,23 @@ public class RedisSinkBolt implements IRichBolt {
     private Jedis jedis;
     private Updater updater;
     
+    private String redisHost;
+    private int redisPort;
+    
+    public RedisSinkBolt(String redisHost, int redisPort) {
+        this.redisHost = redisHost;
+        this.redisPort = redisPort;
+    }
+    
     public void setUpdater(Updater updater) {
         this.updater = updater;
     }
     
     @Override
-    public void prepare(Map stormConf, TopologyContext context,
+    public void prepare(Map conf, TopologyContext context,
             OutputCollector collector) {
         this.collector = collector;
-        jedis = new Jedis("192.168.213.249", 6381);
+        jedis = new Jedis(redisHost, redisPort);
     }
 
     @Override
