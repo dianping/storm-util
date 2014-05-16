@@ -40,12 +40,10 @@ public class RedisSinkBolt implements IRichBolt {
         
         if (updater != null) {
             byte[] oldValue = jedis.get(key);
-            if (oldValue != null) {
-                byte[] newValue = updater.update(oldValue, value);
-                jedis.set(key, newValue);
-                collector.ack(input);
-                return;
-            }
+            byte[] newValue = updater.update(oldValue, value);
+            jedis.set(key, newValue);
+            collector.ack(input);
+            return;
         }
 
         jedis.set(key, value);    
