@@ -41,6 +41,7 @@ public class BlackholeSpout implements IRichSpout {
         } catch (LionException e) {
             throw new RuntimeException(e);
         }
+        consumer.start();
         stream = consumer.getStream();
     }
 
