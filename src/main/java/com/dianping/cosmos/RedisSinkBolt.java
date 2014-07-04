@@ -27,11 +27,11 @@ public class RedisSinkBolt implements IRichBolt {
     private int retryLimit;
     
     public RedisSinkBolt(String redisHost, int redisPort) {
-        this(redisHost, redisPort, 10, 3);
+        this(redisHost, redisPort, 50, 3);
     }
     
     public RedisSinkBolt(String redisHost, int redisPort, int retryLimit) {
-        this(redisHost, redisPort, 10, retryLimit);
+        this(redisHost, redisPort, 50, retryLimit);
     }
     
     public RedisSinkBolt(String redisHost, int redisPort, int timeout, int retryLimit) {
@@ -66,7 +66,7 @@ public class RedisSinkBolt implements IRichBolt {
     private byte[] retryGet(byte[] key) {
         int retry = 0;
         byte[] ret;
-        while (retry <= retryLimit) {
+        while (true) {
             Jedis jedis = null;
             try {
                 jedis = pool.getResource();
@@ -77,21 +77,22 @@ public class RedisSinkBolt implements IRichBolt {
                     pool.returnBrokenResource(jedis);
                     jedis = null;
                 }
+                if (retry > retryLimit) {
+                    throw e;
+                }
+                retry++;
             } finally {
                 if (jedis != null) {
                     pool.returnResource(jedis);
                 }
             }
-            retry++;
         }
-        
-        throw new JedisConnectionException("jedis Connection failure after retryGet " + retryLimit + " times");
     }
     
     private String retrySet(byte[] key, byte[] value) {
         int retry = 0;
         String ret;
-        while (retry <= retryLimit) {
+        while (true) {
             Jedis jedis = null;
             try {
                 jedis = pool.getResource();
@@ -102,15 +103,17 @@ public class RedisSinkBolt implements IRichBolt {
                     pool.returnBrokenResource(jedis);
                     jedis = null;
                 }
+                if (retry > retryLimit) {
+                    throw e;
+                }
+                retry++;
             } finally {
                 if (jedis != null) {
                     pool.returnResource(jedis);
                 }
             }
-            retry++;
+            
         }
-        
-        throw new JedisConnectionException("jedis Connection failure after retrySet " + retryLimit + " times");
     }
     
     @Override
