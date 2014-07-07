@@ -52,7 +52,7 @@ public class RedisSinkBolt implements IRichBolt {
         
         GenericObjectPoolConfig pconf = new GenericObjectPoolConfig();
         pconf.setMaxWaitMillis(2000);
-        pconf.setMaxTotal(-1);
+        pconf.setMaxTotal(1000);
         pconf.setTestOnBorrow(false);
         pconf.setTestOnReturn(false);
         pconf.setTestWhileIdle(true);
@@ -143,6 +143,7 @@ public class RedisSinkBolt implements IRichBolt {
             collector.ack(input);
         } catch (JedisConnectionException e) {
             LOG.warn("JedisConnectionException catched ", e);
+            collector.fail(input);
         }
     }
 
