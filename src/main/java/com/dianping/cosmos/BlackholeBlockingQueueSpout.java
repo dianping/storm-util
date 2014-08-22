@@ -1,6 +1,9 @@
 package com.dianping.cosmos;
 
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,24 +14,30 @@ import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
+import backtype.storm.utils.Utils;
 
 import com.dianping.lion.client.LionException;
 import com.dp.blackhole.consumer.Consumer;
 import com.dp.blackhole.consumer.ConsumerConfig;
 import com.dp.blackhole.consumer.MessageStream;
 
-public class BlackholeSpout implements IRichSpout {
-    public static final Logger LOG = LoggerFactory.getLogger(BlackholeSpout.class);
-    
+public class BlackholeBlockingQueueSpout implements IRichSpout {
+    public static final Logger LOG = LoggerFactory.getLogger(BlackholeBlockingQueueSpout.class);
+    private final int MAX_QUEUE_SIZE = 1000;
+    private final int TIME_OUT = 5000;
     private SpoutOutputCollector collector;
     private String topic;
     private String group;
     private MessageStream stream;
     private Consumer consumer;
+    private BlockingQueue<String> emitQueue;
+    private Thread fetchThread;
+    private int warnningStep = 0;
 
-    public BlackholeSpout(String topic, String group) {
+    public BlackholeBlockingQueueSpout(String topic, String group) {
         this.topic = topic;
         this.group = group;
+        this.emitQueue = new LinkedBlockingQueue<String>(MAX_QUEUE_SIZE);
     }
     
     @Override
@@ -41,14 +50,14 @@ public class BlackholeSpout implements IRichSpout {
         } catch (LionException e) {
             throw new RuntimeException(e);
         }
-        consumer.start();
         stream = consumer.getStream();
+        fetchThread = new Thread(new Handler());
+        fetchThread.start();
     }
 
     @Override
     public void close() {
-        // TODO Auto-generated method stub
-        
+        fetchThread.interrupt();
     }
 
     @Override
@@ -65,11 +74,19 @@ public class BlackholeSpout implements IRichSpout {
 
     @Override
     public void nextTuple() {
-        for (String message : stream) {
+        String message;
+        message = emitQueue.poll();
+        if (message != null) {
             collector.emit(topic, new Values(message));
+        } else {
+            Utils.sleep(100);
+            warnningStep++;
+            if (warnningStep % 100 == 0) {
+                LOG.warn("Queue is empty, cannot poll message.");
+            }
         }
     }
-
+        
     @Override
     public void ack(Object msgId) {
         LOG.debug("ack: " + msgId);
@@ -91,5 +108,29 @@ public class BlackholeSpout implements IRichSpout {
         // TODO Auto-generated method stub
         return null;
     }
-
+    
+    class Handler extends Thread {
+        private boolean running;
+        public Handler() {
+            this.running = true;
+            this.setDaemon(true);
+            this.setName("Emit-handler");
+        }
+        
+        @Override
+        public void run() {
+            while (running) {
+                for (String message : stream) {
+                    try {
+                        while(!emitQueue.offer(message, TIME_OUT, TimeUnit.MILLISECONDS)) {
+                            LOG.error("Queue is full, cannot offer message.");
+                        }
+                    } catch (InterruptedException e) {
+                        LOG.error("Thread Interrupted");
+                        running = false;
+                    }
+                }
+            }
+        }
+    }
 }
