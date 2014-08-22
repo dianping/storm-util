@@ -2,8 +2,8 @@ package com.dianping.cosmos;
 
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -18,7 +18,7 @@ import com.dp.blackhole.consumer.ConsumerConfig;
 import com.dp.blackhole.consumer.MessageStream;
 
 public class BlackholeSpout implements IRichSpout {
-    public static final Log LOG = LogFactory.getLog(BlackholeSpout.class);
+    public static final Logger LOG = LoggerFactory.getLogger(BlackholeSpout.class);
     
     private SpoutOutputCollector collector;
     private String topic;

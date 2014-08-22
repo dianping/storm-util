@@ -6,8 +6,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -24,7 +24,7 @@ import com.dianping.puma.core.event.RowChangedEvent;
 
 
 public class PumaSpout implements IRichSpout{
-    public static final Log LOG = LogFactory.getLog(PumaSpout.class);
+    public static final Logger LOG = LoggerFactory.getLogger(PumaSpout.class);
     
     private SpoutOutputCollector collector;
     private PumaEventListener listener;

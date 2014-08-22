@@ -5,8 +5,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -22,7 +22,7 @@ import com.dp.blackhole.consumer.ConsumerConfig;
 import com.dp.blackhole.consumer.MessageStream;
 
 public class BlackholeBlockingQueueSpout implements IRichSpout {
-    public static final Log LOG = LogFactory.getLog(BlackholeBlockingQueueSpout.class);
+    public static final Logger LOG = LoggerFactory.getLogger(BlackholeBlockingQueueSpout.class);
     private final int MAX_QUEUE_SIZE = 1000;
     private final int TIME_OUT = 5000;
     private SpoutOutputCollector collector;
@@ -32,6 +32,7 @@ public class BlackholeBlockingQueueSpout implements IRichSpout {
     private Consumer consumer;
     private BlockingQueue<String> emitQueue;
     private Thread fetchThread;
+    private int warnningStep = 0;
 
     public BlackholeBlockingQueueSpout(String topic, String group) {
         this.topic = topic;
@@ -79,6 +80,10 @@ public class BlackholeBlockingQueueSpout implements IRichSpout {
             collector.emit(topic, new Values(message));
         } else {
             Utils.sleep(100);
+            warnningStep++;
+            if (warnningStep % 100 == 0) {
+                LOG.warn("Queue is empty, cannot poll message.");
+            }
         }
     }
         
