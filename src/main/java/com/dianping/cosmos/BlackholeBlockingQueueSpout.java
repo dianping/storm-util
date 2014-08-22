@@ -51,7 +51,7 @@ public class BlackholeBlockingQueueSpout implements IRichSpout {
             throw new RuntimeException(e);
         }
         stream = consumer.getStream();
-        fetchThread = new Thread(new Handler());
+        fetchThread = new FetchThread();
         fetchThread.start();
     }
 
@@ -109,9 +109,9 @@ public class BlackholeBlockingQueueSpout implements IRichSpout {
         return null;
     }
     
-    class Handler extends Thread {
+    class FetchThread extends Thread {
         private boolean running;
-        public Handler() {
+        public FetchThread() {
             this.running = true;
             this.setDaemon(true);
             this.setName("Emit-handler");
