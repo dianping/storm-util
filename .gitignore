@@ -5,7 +5,8 @@
 .classpath
 .project
 .settings
-bin/.settings
+bin
+*.class
 .eclipse
 target
 *.iml
