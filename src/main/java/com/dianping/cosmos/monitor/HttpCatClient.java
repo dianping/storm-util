@@ -28,13 +28,4 @@ public class HttpCatClient {
             LOGGER.error("send to cat error. ", e.getMessage());
         }
     }
-    
-    public static void main(String[] args){
-        try {
-            HttpCatClient.sendMetric("MobileUV", "Spout_Count","count",  "1");
-            HttpCatClient.sendMetric("MobileUV", "Spout","sum", "100");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 }
