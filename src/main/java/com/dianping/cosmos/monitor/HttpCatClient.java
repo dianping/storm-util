@@ -25,7 +25,7 @@ public class HttpCatClient {
             httClientSerivce.get(request.toString());
         }
         catch(Exception e){
-            LOGGER.error("send to cat error. ", e.getMessage());
+            LOGGER.error("send to cat error. ",  e);
         }
     }
 }

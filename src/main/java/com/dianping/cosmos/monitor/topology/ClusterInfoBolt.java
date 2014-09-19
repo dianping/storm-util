@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.thrift7.TException;
+import org.apache.thrift7.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,6 +94,7 @@ public class ClusterInfoBolt  extends BaseRichBolt{
             HttpCatClient.sendMetric("Monitor", "ClusterEmitTPS", "avg", String.valueOf(clusterTPS));
             
         } catch (TException e) {
+            initClient(configMap);
             LOGGER.error("get client info error.", e);
         }
         catch(NotAliveException nae){
@@ -144,7 +146,7 @@ public class ClusterInfoBolt  extends BaseRichBolt{
             if(executor.get_uptime_secs() >= 600){
                 componentTps += emittedEntry.getValue() / 600;
             }
-            if(executor.get_uptime_secs() >= 10 && executor.get_uptime_secs() <= 600){
+            if(executor.get_uptime_secs() >= 10 && executor.get_uptime_secs() < 600){
                 componentTps += emittedEntry.getValue() / executor.get_uptime_secs();
             }   
         }

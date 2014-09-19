@@ -65,7 +65,7 @@ public class HttpClientService {
 	private HttpClient getHttpClient() {
 		HttpClient httpClient = new DefaultHttpClient();
 		httpClient.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 5000);
-		httpClient.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 3000);
+		httpClient.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 5000);
 		return httpClient;
 	}
 
