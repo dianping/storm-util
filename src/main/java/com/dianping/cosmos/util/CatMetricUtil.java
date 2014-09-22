@@ -12,7 +12,7 @@ public class CatMetricUtil {
      * @return
      */
     public static String getSpoutMetricName(String topic, String group){
-        return CAT_METRIC_NAME_PREFIX.concat(topic).concat("/").concat(group);
+        return CAT_METRIC_NAME_PREFIX.concat(topic).concat("[").concat(group).concat("]");
     }
     
     /**
@@ -26,6 +26,8 @@ public class CatMetricUtil {
         }
         return StringUtils.startsWith(dataPointName, CAT_METRIC_NAME_PREFIX);
     }
+    
+    
     
     /**
      * 根据metric的名字，返回写入cat上的key

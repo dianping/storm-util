@@ -78,8 +78,8 @@ public class ClusterInfoBolt  extends BaseRichBolt{
                     + ", usedWorkers = " + usedWorkers 
                     + ", freeWorkers  = " +  freeWorkers);
             
-            HttpCatClient.sendMetric("Monitor", "freeSlots", "avg", String.valueOf(freeWorkers));
-            HttpCatClient.sendMetric("Monitor", "totalSlots", "avg", String.valueOf(totalWorkers));
+            HttpCatClient.sendMetric("ClusterMonitor", "freeSlots", "avg", String.valueOf(freeWorkers));
+            HttpCatClient.sendMetric("ClusterMonitor", "totalSlots", "avg", String.valueOf(totalWorkers));
             
             List<TopologySummary> topologySummaryList = clusterSummary.get_topologies();
             long clusterTPS = 0l;
@@ -89,9 +89,9 @@ public class ClusterInfoBolt  extends BaseRichBolt{
                 if(topology.get_name().startsWith("ClusterMonitor")){
                     continue;
                 }
-                HttpCatClient.sendMetric("Monitor", topology.get_name(), "avg", String.valueOf(topologyTPS));
+                HttpCatClient.sendMetric(topology.get_name(), topology.get_name() + "-TPS", "avg", String.valueOf(topologyTPS));
             }
-            HttpCatClient.sendMetric("Monitor", "ClusterEmitTPS", "avg", String.valueOf(clusterTPS));
+            HttpCatClient.sendMetric("ClusterMonitor", "ClusterEmitTPS", "avg", String.valueOf(clusterTPS));
             
         } catch (TException e) {
             initClient(configMap);

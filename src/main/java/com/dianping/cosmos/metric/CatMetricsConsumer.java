@@ -3,6 +3,7 @@ package com.dianping.cosmos.metric;
 import java.util.Collection;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,12 +28,14 @@ import com.dianping.cosmos.util.CatMetricUtil;
  *
  */
 @SuppressWarnings("rawtypes")
-public class CatSpoutMetricsConsumer implements IMetricsConsumer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CatSpoutMetricsConsumer.class);
+public class CatMetricsConsumer implements IMetricsConsumer {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CatMetricsConsumer.class);
+    private String stormId;
 
     @Override
     public void prepare(Map stormConf, Object registrationArgument, 
             TopologyContext context, IErrorReporter errorReporter) {
+        stormId = context.getStormId();
     }
 
 
@@ -41,7 +44,7 @@ public class CatSpoutMetricsConsumer implements IMetricsConsumer {
         for (DataPoint p : dataPoints) {
             try{
                 if(CatMetricUtil.isCatMetric(p.name)){
-                    HttpCatClient.sendMetric("Spout", 
+                    HttpCatClient.sendMetric(getTopologyName(), 
                             CatMetricUtil.getCatMetricKey(p.name), "sum", String.valueOf(p.value));
                 }
             }
@@ -50,7 +53,18 @@ public class CatSpoutMetricsConsumer implements IMetricsConsumer {
             }
         }
     }
+    
+    private String getTopologyName(){
+       return StringUtils.substringBefore(stormId, "-");
+    }
 
     @Override
-    public void cleanup() { }
+    public void cleanup() { 
+    }
+    
+    public static void main(String[] args){
+        CatMetricsConsumer c = new CatMetricsConsumer();
+        c.stormId = "HippoUV_25-15-1410857734";
+        System.out.println(c.getTopologyName());
+    }
 }
