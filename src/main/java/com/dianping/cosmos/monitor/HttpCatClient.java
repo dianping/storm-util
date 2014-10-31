@@ -20,11 +20,11 @@ public class HttpCatClient {
     private static AtomicInteger CURRENT_SERVER_INDEX = new AtomicInteger(0);
     
     static{
-        CAT_SERVERS.add("http://cat02.nh/");
-        CAT_SERVERS.add("http://cat03.nh/");
-        CAT_SERVERS.add("http://cat04.nh/");
-        CAT_SERVERS.add("http://cat05.nh/");
-        CAT_SERVERS.add("http://cat06.nh/");
+        CAT_SERVERS.add("http://cat02.nh:8080/");
+        CAT_SERVERS.add("http://cat03.nh:8080/");
+        CAT_SERVERS.add("http://cat04.nh:8080/");
+        CAT_SERVERS.add("http://cat05.nh:8080/");
+        CAT_SERVERS.add("http://cat06.nh:8080/");
     }
     
     public static void sendMetric(String domain, String key, String op, String value){
