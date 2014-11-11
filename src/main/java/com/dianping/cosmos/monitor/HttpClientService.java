@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -20,8 +19,6 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dianping.cosmos.util.JSONUtil;
-
 
 /**
  * 向cat写入metric相关信息
@@ -32,7 +29,7 @@ public class HttpClientService {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(HttpClientService.class);
 	
-	private static JSONUtil jsonUtil = JSONUtil.getInstance();
+//	private static JSONUtil jsonUtil = JSONUtil.getInstance();
 	
 	protected String excuteGet(String url, boolean useURI) throws Exception {
 		HttpClient httpClient = getHttpClient();
@@ -68,7 +65,7 @@ public class HttpClientService {
 	private HttpClient getHttpClient() {
 		HttpClient httpClient = new DefaultHttpClient();
 		httpClient.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 5000);
-		httpClient.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 3000);
+		httpClient.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 5000);
 		return httpClient;
 	}
 
@@ -92,17 +89,17 @@ public class HttpClientService {
 		return request;
 	}
 	
-	protected boolean parseResultMap(String response, String url) throws Exception{
-		Map<?, ?> result = jsonUtil.formatJSON2Map(response);
-		if(result == null){
-			return false;
-		}
-		String code = (String)result.get("statusCode");
-		if("-1".equals(code)){
-            throw new Exception(String.valueOf(result.get("errorMsg")));
-		}
-		return true;
-	}
+//	protected boolean parseResultMap(String response, String url) throws Exception{
+//		Map<?, ?> result = jsonUtil.formatJSON2Map(response);
+//		if(result == null){
+//			return false;
+//		}
+//		String code = (String)result.get("statusCode");
+//		if("-1".equals(code)){
+//            throw new Exception(String.valueOf(result.get("errorMsg")));
+//		}
+//		return true;
+//	}
 	
 
 	public void get(String url) throws Exception{
@@ -110,7 +107,7 @@ public class HttpClientService {
 		if(response == null){
 			LOGGER.error("call uri error, response is null, uri = " + url);
 		}
-		parseResultMap(response, url);
+		//parseResultMap(response, url);
 	}
 	
 	public void getByURI(String url) throws Exception{
@@ -118,6 +115,6 @@ public class HttpClientService {
 		if(response == null){
 			LOGGER.error("call uri error, response is null, uri = " + url);
 		}
-        parseResultMap(response, url);
+        //parseResultMap(response, url);
 	}
 }

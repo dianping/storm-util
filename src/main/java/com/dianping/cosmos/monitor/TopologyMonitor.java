@@ -31,7 +31,7 @@ public class TopologyMonitor {
             LOGGER.info("last minute tuple = " + counter.getTupleCounter());
              if(counter.getTupleCounter() <= 10000){
                 LOGGER.error("spout has problem, restar topology....");
-                restartTopology(stormId);
+                //restartTopology(stormId);
             }
             spoutCounterMap.clear();
         }
