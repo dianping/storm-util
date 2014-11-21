@@ -40,12 +40,7 @@ public class PumaSpout implements IRichSpout{
     private String pumaName;
     private String pumaTarget;
     private int pumaServerId;
-    private String pumaSeqFileBase;
-    
-    public PumaSpout(String host, int port, String name, String target, HashMap<String, String[]> tables) {
-        this(host, port, name, target, tables, 0);
-    }
-    
+    private String pumaSeqFileBase;    
     
     public PumaSpout(String host, int port, String name, String target, HashMap<String, String[]> tables, int serverId) {
         pumaHost = host;
