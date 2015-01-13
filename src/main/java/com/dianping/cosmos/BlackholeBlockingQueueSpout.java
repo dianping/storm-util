@@ -2,6 +2,7 @@ package com.dianping.cosmos;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,7 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
+import backtype.storm.tuple.MessageId;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
 
@@ -34,6 +36,8 @@ public class BlackholeBlockingQueueSpout implements IRichSpout {
     private MessageFetcher fetchThread;
     private int warnningStep = 0;
     private transient CountMetric _spoutMetric;
+    private Random random = null;
+
 
     public BlackholeBlockingQueueSpout(String topic, String group) {
         this.topic = topic;
@@ -44,6 +48,7 @@ public class BlackholeBlockingQueueSpout implements IRichSpout {
     public void open(Map conf, TopologyContext context,
             SpoutOutputCollector _collector) {
         collector = _collector;
+        random = new Random(Utils.secureRandomLong());
         _spoutMetric = new CountMetric();
         context.registerMetric(CatMetricUtil.getSpoutMetricName(topic, group),  
                 _spoutMetric, Constants.EMIT_FREQUENCY_IN_SECONDS);
@@ -79,7 +84,7 @@ public class BlackholeBlockingQueueSpout implements IRichSpout {
     public void nextTuple() {
         String message = fetchThread.pollMessage();
         if (message != null) {
-            collector.emit(topic, new Values(message));
+            collector.emit(topic, new Values(message), MessageId.generateId(random));
             _spoutMetric.incr();
         } else {
             Utils.sleep(100);
