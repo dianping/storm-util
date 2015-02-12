@@ -40,7 +40,7 @@ public class PumaSpout implements IRichSpout{
     private String pumaName;
     private String pumaTarget;
     private int pumaServerId;
-    private String pumaSeqFileBase;    
+    private String pumaSeqFileBase = "memcached";    
     
     public PumaSpout(String host, int port, String name, String target, HashMap<String, String[]> tables, int serverId) {
         pumaHost = host;
