@@ -44,9 +44,12 @@ public class FinalCounterBolt extends BaseRichBolt{
       totalCount += count;
       
       LOG.info("word = " + word + ", count = " + count + ", totalCount = " + totalCount);
+      
       collector.emit(new Values(totalCount));
       collector.ack(tuple);
     }
+    
+    
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
