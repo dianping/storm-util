@@ -16,7 +16,8 @@ public class StormOffsetStrategy implements OffsetStrategy {
 
     private static final String TABLE_NAME = "bi.blackhole_offset.dim";
     private static final int EXPIRE = 604800;//一周的过期时间
-    private DPRedis dpRedis = ServiceFactory.getService(DPRedis.class, 500);
+    private DPRedis dpRedis = ServiceFactory.getService("http://service.dianping.com/dpdata/dpredis", 
+            DPRedis.class, 500);
     
     private String consumerGroup;
     //多少条消息后，同步一次到Redis中

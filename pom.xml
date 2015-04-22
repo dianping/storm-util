@@ -59,6 +59,11 @@
 			<version>1.2.7</version>
 		</dependency>
 		<dependency>
+		    <groupId>com.dianping.swallow</groupId>
+		    <artifactId>swallow-consumerclient</artifactId>
+		    <version>0.7.0</version> 
+		</dependency>
+		<dependency>
            	<groupId>com.dianping.dp</groupId>
 			<artifactId>data-api</artifactId>
 			<version>0.9.32-SNAPSHOT</version>
