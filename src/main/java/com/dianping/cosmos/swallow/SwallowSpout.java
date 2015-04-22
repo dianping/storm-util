@@ -59,7 +59,8 @@ public class SwallowSpout implements IRichSpout {
     }
 
     @Override
-    public void deactivate() {   
+    public void deactivate() { 
+        listener.shutdown();
         consumer.close();
     }
 
