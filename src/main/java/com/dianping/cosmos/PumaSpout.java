@@ -22,8 +22,11 @@ import com.dianping.puma.api.PumaClient;
 import com.dianping.puma.core.event.ChangedEvent;
 import com.dianping.puma.core.event.RowChangedEvent;
 
-
+@SuppressWarnings("rawtypes")
 public class PumaSpout implements IRichSpout{
+
+    private static final long serialVersionUID = 1L;
+
     public static final Logger LOG = LoggerFactory.getLogger(PumaSpout.class);
     
     private SpoutOutputCollector collector;
@@ -37,24 +40,15 @@ public class PumaSpout implements IRichSpout{
     private String pumaName;
     private String pumaTarget;
     private int pumaServerId;
-    private String pumaSeqFileBase;
+    private String pumaSeqFileBase = "memcached";    
     
-    public PumaSpout(String host, int port, String name, String target, HashMap<String, String[]> tables) {
-        this(host, port, name, target, tables, null);
-    }
-    
-    public PumaSpout(String host, int port, String name, String target, HashMap<String, String[]> tables, String seqFileBase) {
-        this(host, port, name, target, tables, 9999, seqFileBase);
-    }
-    
-    public PumaSpout(String host, int port, String name, String target, HashMap<String, String[]> tables, int serverId, String seqFileBase) {
+    public PumaSpout(String host, int port, String name, String target, HashMap<String, String[]> tables, int serverId) {
         pumaHost = host;
         pumaPort = port;
         pumaName = name;
         pumaTarget = target;
         watchTables = tables;
         pumaServerId = serverId;
-        pumaSeqFileBase = seqFileBase;
     }
     
     protected static String getMsgId(RowChangedEvent e) {
@@ -83,9 +77,7 @@ public class PumaSpout implements IRichSpout{
         }
 
         @Override
-        public void onConnectException(Exception e) {
-            // TODO Auto-generated method stub
-            
+        public void onConnectException(Exception e) {            
         }
 
         @Override
@@ -95,7 +87,6 @@ public class PumaSpout implements IRichSpout{
 
         @Override
         public void onSkipEvent(ChangedEvent event) {
-            // TODO Auto-generated method stub
             
         }
         
@@ -113,13 +104,11 @@ public class PumaSpout implements IRichSpout{
 
     @Override
     public void close() {
-        // TODO Auto-generated method stub
         
     }
 
     @Override
     public void deactivate() {
-        // TODO Auto-generated method stub
         
     }
 
@@ -187,7 +176,6 @@ public class PumaSpout implements IRichSpout{
 
     @Override
     public Map<String, Object> getComponentConfiguration() {
-        // TODO Auto-generated method stub
         return null;
     }
 

@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.thrift7.TException;
-import org.apache.thrift7.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +47,10 @@ public class ClusterInfoBolt  extends BaseRichBolt{
         this.configMap = map;
         initClient(configMap);
     }
+    /**
+     * 初始化nimbus client
+     * @param map
+     */
     private void initClient(Map map) {
         nimbusClient = NimbusClient.getConfiguredClient(map);
         client = nimbusClient.getClient();
@@ -86,6 +89,7 @@ public class ClusterInfoBolt  extends BaseRichBolt{
             for(TopologySummary topology : topologySummaryList){
                 long topologyTPS = getTopologyTPS(topology, client);
                 clusterTPS += topologyTPS;
+                //过滤掉监控的Topology的数据
                 if(topology.get_name().startsWith("ClusterMonitor")){
                     continue;
                 }
@@ -102,6 +106,14 @@ public class ClusterInfoBolt  extends BaseRichBolt{
         }
     }
     
+    /**
+     * 计算某个Topology的TPS
+     * @param topology
+     * @param client
+     * @return
+     * @throws NotAliveException
+     * @throws TException
+     */
     protected long getTopologyTPS(TopologySummary topology, Client client) throws NotAliveException, TException{
         long topologyTps = 0l;
         String topologyId = topology.get_id();
@@ -120,6 +132,11 @@ public class ClusterInfoBolt  extends BaseRichBolt{
         return topologyTps;
     }
     
+    /**
+     * 计算每一个executor的TPS
+     * @param executor
+     * @return
+     */
     private long getComponentTPS(ExecutorSummary executor) {
         long componentTps = 0l;
         if(executor == null){
@@ -135,6 +152,7 @@ public class ClusterInfoBolt  extends BaseRichBolt{
         }
 
         Map<String, Map<String, Long>> emittedMap = executor.get_stats().get_emitted();
+        //获取当前10分钟的数据，对应Storm UI上的window是10m的统计值
         Map<String, Long> minutesEmitted = emittedMap.get("600");
         if(minutesEmitted == null){
             return componentTps;
@@ -146,6 +164,7 @@ public class ClusterInfoBolt  extends BaseRichBolt{
             if(executor.get_uptime_secs() >= 600){
                 componentTps += emittedEntry.getValue() / 600;
             }
+            //如果executor刚刚启动，启动时间从10秒后才开始计算
             if(executor.get_uptime_secs() >= 10 && executor.get_uptime_secs() < 600){
                 componentTps += emittedEntry.getValue() / executor.get_uptime_secs();
             }   
@@ -163,6 +182,7 @@ public class ClusterInfoBolt  extends BaseRichBolt{
     @Override
     public Map getComponentConfiguration(){
          Map<String, Object> conf = new HashMap<String, Object>();
+         //统计的时间间隔频率
          conf.put(Config.TOPOLOGY_TICK_TUPLE_FREQ_SECS, Constants.TPS_COUNTER_FREQUENCY_IN_SECONDS);
          return conf;
     }

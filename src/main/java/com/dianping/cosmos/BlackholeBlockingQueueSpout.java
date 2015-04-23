@@ -15,12 +15,15 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
 
+import com.dianping.cosmos.blackhole.BlackholeMessageId;
+import com.dianping.cosmos.blackhole.MessageFetcher;
+import com.dianping.cosmos.blackhole.StormOffsetStrategy;
 import com.dianping.cosmos.util.CatMetricUtil;
 import com.dianping.cosmos.util.Constants;
-import com.dianping.lion.client.LionException;
-import com.dp.blackhole.consumer.Consumer;
-import com.dp.blackhole.consumer.ConsumerConfig;
 import com.dp.blackhole.consumer.MessageStream;
+import com.dp.blackhole.consumer.api.Consumer;
+import com.dp.blackhole.consumer.api.ConsumerConfig;
+import com.dp.blackhole.consumer.api.MessagePack;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class BlackholeBlockingQueueSpout implements IRichSpout {
@@ -33,11 +36,28 @@ public class BlackholeBlockingQueueSpout implements IRichSpout {
     private Consumer consumer;
     private MessageFetcher fetchThread;
     private int warnningStep = 0;
+    //多少条消息后，同步一次到Redis中
+    private int syncFrequency;
+    
     private transient CountMetric _spoutMetric;
+    
+    private transient StormOffsetStrategy offsetStrategy;
 
     public BlackholeBlockingQueueSpout(String topic, String group) {
         this.topic = topic;
         this.group = group;
+    }
+    
+    /**
+     * blackhole spout的构造函数
+     * @param topic topic名称
+     * @param group comsumer的group名称
+     * @param syncFrequency 多少条消息后，同步offset到Redis中
+     */
+    public BlackholeBlockingQueueSpout(String topic, String group, int syncFrequency) {
+        this.topic = topic;
+        this.group = group;
+        this.syncFrequency = syncFrequency;
     }
     
     @Override
@@ -49,11 +69,13 @@ public class BlackholeBlockingQueueSpout implements IRichSpout {
                 _spoutMetric, Constants.EMIT_FREQUENCY_IN_SECONDS);
         
         ConsumerConfig config = new ConsumerConfig();
-        try {
-            consumer = new Consumer(topic, group, config);
-        } catch (LionException e) {
-            throw new RuntimeException(e);
-        }
+        
+        offsetStrategy  = new StormOffsetStrategy();
+        offsetStrategy.setConsumerGroup(group);
+        offsetStrategy.setSyncFrequency(syncFrequency);
+        
+        consumer = new Consumer(topic, group, config, offsetStrategy);
+
         consumer.start();
         stream = consumer.getStream();
         
@@ -72,15 +94,19 @@ public class BlackholeBlockingQueueSpout implements IRichSpout {
     }
 
     @Override
-    public void deactivate() {        
+    public void deactivate() {
+        offsetStrategy.syncOffset();
     }
 
     @Override
     public void nextTuple() {
-        String message = fetchThread.pollMessage();
+        MessagePack message = fetchThread.pollMessage();
         if (message != null) {
-            collector.emit(topic, new Values(message));
+            collector.emit(topic, new Values(message.getContent()), 
+                    BlackholeMessageId.getMessageId(message.getPartition(), message.getOffset()));
+
             _spoutMetric.incr();
+            offsetStrategy.updateOffset(message);
         } else {
             Utils.sleep(100);
             warnningStep++;
